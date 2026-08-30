@@ -26,15 +26,15 @@ class Profile(models.Model):
     ROLE_CHOICE=[('admin','Admin'),
                  ('user','User')]
     user=models.OneToOneField(User,on_delete=models.CASCADE)
-    role=models.CharField(max_length=10,choices=ROLE_CHOICE)
+    role=models.CharField(max_length=10,choices=ROLE_CHOICE,default='user')
 
     def __str__(self):
         return self.user.username
     
-@receiver(post_save,sender=User)
-def created_profile(sender,instance,created,**kwargs):
-    if created:
-        Profile.objects.create(user=instance)
+# @receiver(post_save,sender=User)
+# def created_profile(sender,instance,created,**kwargs):
+#     if created:
+#         Profile.objects.create(user=instance,role='user')
     
 
     

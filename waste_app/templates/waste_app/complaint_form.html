@@ -1,9 +1,72 @@
-{% extends 'waste_app/base.html' %}
+{% extends "waste_app/base.html" %}
+{% load static %}
+{% block title %}Submit complaint{% endblock %}
+{% block page_title %}Submit complaint{% endblock %}
 {% block content %}
-<h3>Submit Waste Complaint</h3>
-<form method="post" enctype="multipart/form-data">
-{% csrf_token %}
-{{ form.as_p }}
-<button class="btn btn-primary">Submit</button>
-</form>
+{% url 'complaint_list' as url_list %}
+<div class="row justify-content-center">
+  <div class="col-xl-8 col-lg-10">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <div>
+        <p class="et-muted mb-1">Citizen intake</p>
+        <h2 class="h4 mb-0">Report waste or sanitation issue</h2>
+      </div>
+    </div>
+    <div class="et-card et-card-pad">
+      <form method="post" enctype="multipart/form-data" id="complaintForm" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+          {% if field.is_hidden %}
+            {{ field }}
+          {% elif field.field.widget.input_type == "file" %}
+            <div class="et-field">
+              <label class="et-label">{{ field.label }}</label>
+              <div class="et-dropzone" data-et-dropzone>
+                <div>
+                  <i class="bi bi-cloud-arrow-up d-block mb-2"></i>
+                  <strong>Drag and drop an image</strong>
+                  <p class="et-muted small mb-2">or click to browse JPG, PNG files</p>
+                  {{ field }}
+                </div>
+              </div>
+              {{ field.errors }}
+              <div class="et-preview-wrap" data-et-preview>
+                <img src="" alt="Selected evidence preview">
+              </div>
+            </div>
+          {% else %}
+            <div class="et-field">
+              <label class="et-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+              {{ field.errors }}
+              {% if "description" in field.name or "details" in field.name or "comment" in field.name %}
+                <div class="et-char-count" id="etCharCount">0 / 500</div>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+        <div class="d-flex flex-wrap gap-2 justify-content-end mt-3">
+          <a class="btn btn-et-ghost" href="{{ url_list }}">Cancel</a>
+          <button type="submit" class="btn btn-et" data-et-loading>
+            <i class="bi bi-send me-1"></i> Submit complaint
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var ta = document.querySelector("#complaintForm textarea");
+    var count = document.getElementById("etCharCount");
+    if (ta) {
+      if (!ta.getAttribute("maxlength")) ta.setAttribute("maxlength", "500");
+      if (count) ta.setAttribute("data-et-counter", "#etCharCount");
+    }
+  });
+</script>
 {% endblock %}

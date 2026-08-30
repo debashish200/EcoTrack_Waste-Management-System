@@ -12,10 +12,23 @@ from django.core.paginator import Paginator
 # Create your views here.
 
 def user_register(request):
+    print("rigister view called")
     form=RegistrationForm(request.POST or None)
+    print('post req recved')
+    print("FORM FIELDS:")
+    print(form.fields.keys())
+
     if form.is_valid():
-        form.save()
+        print('form is valid')
+        user=form.save()
+        print('user created',user.username)
+        messages.success(request,"Registration Successfull")
         return redirect('login')
+    else:
+        print('form error')
+        print("FORM ERRORS =", form.errors)
+        print("FORM DATA =", request.POST)
+        print(form.errors)
     d={'form':form}
     return render(request,'waste_app/register.html',d)
 
@@ -81,8 +94,16 @@ def admin_dashboard(request):
         return HttpResponse("Unauthorized", status=403)
     
     if request.method == "POST":
-        cid = request.POST.get("cid")
+        print(request.POST)
+        cid = (request.POST.get("cid")
+               or request.POST.get("complaint_id")
+            or request.POST.get("id")
+            )
+
         new_status = request.POST.get("status")
+        if not cid:
+            messages.error(request, "Complaint ID not received.")
+            return redirect("admin_dashboard")
 
         try:
             complaint = Complaint.objects.get(id=cid)
@@ -122,12 +143,29 @@ def admin_dashboard(request):
 
     else:
         complaints = complaints.order_by('-created_at')
+        
+    context = {
+  
+      "complaints": complaints,
+
+        "total_complaints": complaints.count(),
+
+        "pending_count":
+            complaints.filter(status="Pending").count(),
+
+        "in_progress_count":
+            complaints.filter(status="In Progress").count(),
+
+        "resolved_count":
+            complaints.filter(status="Resolved").count(),
+               
+    }
 
     # PAGINATION
     paginator = Paginator(complaints, 5)  # 5 complaints per page
     page_number = request.GET.get('page')
-    complaints = paginator.get_page(page_number)
+    page_obj = paginator.get_page(page_number)
 
-    return render(request, "waste_app/admin_dashboard.html", {
-        "complaints": complaints
-    })
+    return render(request, "waste_app/admin_dashboard.html",
+        context,
+     )

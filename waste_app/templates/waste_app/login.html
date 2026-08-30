@@ -1,20 +1,94 @@
-{% extends 'waste_app/base.html' %}
+{% extends "waste_app/base.html" %}
+{% load static %}
+{% block title %}Sign in{% endblock %}
+{% block body_class %}et-auth{% endblock %}
 {% block content %}
-
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <form method="post" id='formwid'>
-            <h3>Login</h3>
-            {% csrf_token %}
-            <input name="username" class="form-control" placeholder="Username"><br>
-            <input type="password" name="password" class="form-control" placeholder="Password"><br>
-            <button class="btn btn-success">Login</button><br>
-            <div class="text-center mt-3">
-                <small>
-                    Don't have an account?
-                    <a href="{% url 'register' %}">Register</a>
-                </small>
-            </div>
-        </form>
+{% url 'register' as url_register %}
+{% url 'password_reset' as url_reset %}
+<div class="et-auth-split">
+  <section class="et-auth-art">
+    <p class="text-uppercase small mb-2" style="letter-spacing:.12em;opacity:.8;">Smart rural infrastructure</p>
+    <h1 class="display-5 mb-3">Cleaner villages. Faster response. Full visibility.</h1>
+    <p class="lead mb-4" style="max-width:36rem;opacity:.9;">
+      EcoTrack helps local bodies track waste complaints, assign crews, and close the loop with photo evidence.
+    </p>
+    <div class="d-flex gap-4 small">
+      <div><i class="bi bi-shield-check me-1"></i> Secure citizen access</div>
+      <div><i class="bi bi-geo-alt me-1"></i> Ward-level tracking</div>
     </div>
-    {% endblock %}
+  </section>
+  <section class="et-auth-panel">
+    <div class="et-card et-auth-card">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <img src="{% static 'images/logo.svg' %}" alt="" width="40" height="40">
+        <div>
+          <strong>EcoTrack</strong>
+          <div class="et-muted small">Operator sign in</div>
+        </div>
+      </div>
+      <h2 class="h3 mb-1">Welcome back</h2>
+      <p class="et-muted mb-4">Use your registered account to continue.</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="et-field">
+          <label class="et-label" for="{{ form.username.id_for_label }}">Username</label>
+          <input
+    type="text"
+    name="username"
+    class="form-control"
+    placeholder="Username">
+          <!-- {{ form.username }} -->
+          {{ form.username.errors }}
+        </div>
+        <div class="et-field">
+          <label class="et-label" for="{{ form.password.id_for_label }}">Password</label>
+          <div class="et-password-wrap">
+            <input
+    type="password"
+    name="password"
+    class="form-control"
+    placeholder="Password">
+            <!-- {{ form.password }} -->
+            <button type="button" class="et-toggle-pass" data-et-toggle-password aria-label="Show password">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+          {{ form.password.errors }}
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="remember_me" id="rememberMe" value="1">
+            <label class="form-check-label" for="rememberMe">Remember me</label>
+          </div>
+          {% if url_reset %}
+          <a class="small" href="{{ url_reset }}">Forgot password</a>
+          {% else %}
+          <button type="button" class="btn btn-link btn-sm p-0" data-bs-toggle="modal" data-bs-target="#etForgotModal">Forgot password</button>
+          {% endif %}
+        </div>
+        <button type="submit" class="btn btn-et w-100" data-et-loading>Sign in</button>
+      </form>
+      <p class="text-center mt-4 mb-0 small">
+        New to EcoTrack?
+        <a href="{{ url_register }}">Create an account</a>
+      </p>
+    </div>
+  </section>
+</div>
+{% if not url_reset %}
+<div class="modal fade" id="etForgotModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content et-card border-0">
+      <div class="modal-header border-0">
+        <h2 class="modal-title h5">Reset password</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-0">
+        <p class="mb-0">Ask your municipal administrator to reset the account, or use the password-reset route when it is enabled on this server.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

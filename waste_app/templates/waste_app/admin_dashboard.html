@@ -1,130 +1,164 @@
-{% extends 'waste_app/base.html' %}
 
+{% extends "waste_app/base.html" %}
+{% load static %}
+{% block title %}Admin dashboard{% endblock %}
+{% block page_title %}Operations dashboard{% endblock %}
 {% block content %}
-
-<h4 class="mb-4">All Complaints</h4>
-
-<div class="mb-3 d-flex gap-2">
-
-    <a href="?sort=latest" class="btn btn-dark btn-sm">
-        Latest
-    </a>
-
-    <a href="?sort=pending" class="btn btn-warning btn-sm">
-        Pending
-    </a>
-
-    <a href="?sort=resolved" class="btn btn-success btn-sm">
-        Resolved
-    </a>
-
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-xl-3">
+    <div class="et-card et-card-pad et-stat">
+      <div>
+        <div class="label">Total complaints</div>
+        <div class="value">{% firstof total_complaints total 0 %}</div>
+      </div>
+      <div class="et-stat-icon"><i class="bi bi-clipboard-data"></i></div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="et-card et-card-pad et-stat pending">
+      <div>
+        <div class="label">Pending</div>
+        <div class="value">{% firstof pending_count pending 0 %}</div>
+      </div>
+      <div class="et-stat-icon"><i class="bi bi-hourglass-split"></i></div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="et-card et-card-pad et-stat progress">
+      <div>
+        <div class="label">In progress</div>
+        <div class="value">{% firstof in_progress_count inprogress_count progress_count 0 %}</div>
+      </div>
+      <div class="et-stat-icon"><i class="bi bi-arrow-repeat"></i></div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="et-card et-card-pad et-stat resolved">
+      <div>
+        <div class="label">Resolved</div>
+        <div class="value">{% firstof resolved_count completed_count 0 %}</div>
+      </div>
+      <div class="et-stat-icon"><i class="bi bi-check2-circle"></i></div>
+    </div>
+  </div>
 </div>
+<div class="et-card et-card-pad mb-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+      <h2 class="h5 mb-0">Recent complaints</h2>
+      <p class="et-muted small mb-0">Search, filter, and update field status</p>
+    </div>
+  </div>
+  <div class="row g-2 mb-3">
+    <div class="col-md-8">
+      <div class="et-search">
+        <i class="bi bi-search"></i>
+        <input type="search" placeholder="Search complaints…" data-et-table-search>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <select class="form-select" data-et-status-filter>
+        <option value="">All statuses</option>
+        <option>Pending</option>
+        <option>In Progress</option>
+        <option>Resolved</option>
+        <option>Rejected</option>
+      </select>
+    </div>
+  </div>
+  <div class="et-table-wrap et-table-desktop">
 
-<table class="table table-hover">
-
-    <thead class="table-light">
+    <table class="table et-table align-middle">
+      <thead>
         <tr>
-            <th>User</th>
-            <th>Location</th>
-            <th>Status</th>
-            <th>Image</th>
-            <th>Complaint Date</th>
-            <th>Action</th>
+          <th>ID</th>
+          <th>Citizen</th>
+          <th>Photo</th>
+          <th>Issue</th>
+          <th>Status</th>
+          <th>Update</th>
         </tr>
-    </thead>
-
-    {% for c in complaints %}
-    <tr>
-        <td>{{ c.user.username }}</td>
-        <td>{{ c.location }}</td>
-
-
-        <td>
-            <span class="badge 
-        {% if c.status == 'Pending' %}bg-warning
-        {% elif c.status == 'In Progress' %}bg-primary
-        {% else %}bg-success{% endif %}">
-                {{ c.status }}
-            </span>
-        </td>
-        <td>
-            {% if c.image %}
-            <img src="{{ c.image.url }}" width="80">
-            {% else %}
-            No Image
-            {% endif %}
-        </td>
-        <td>{{ c.created_at|date:"d M Y, H:i" }}</td>
-        <td>
-            <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="cid" value="{{ c.id }}">
-
-
-                <select name="status" class="form-select">
-
-                    {% if c.status == "Pending" %}
-                    <option selected>Pending</option>
-                    <option>In Progress</option>
-                    <option>Resolved</option>
-
-                    {% elif c.status == "In Progress" %}
-                    <option disabled>Pending</option>
-                    <option selected>In Progress</option>
-                    <option>Resolved</option>
-
-                    {% else %}
-                    <option disabled>Pending</option>
-                    <option disabled>In Progress</option>
-                    <option selected>Resolved</option>
-                    {% endif %}
-
-                </select>
-
-                <!-- <select name="status" >
-                <option>Pending</option>
-                <option>In Progress</option>
-                <option>Resolved</option>
-            </select> -->
-
-                <button class="btn btn-success btn-modern btn-sm">Update</button>
+      </thead>
+      <tbody>
+        {% for complaint in complaints %}
+        <tr data-et-row data-status="{{ complaint.status }}" data-search="{{ complaint }} {{ complaint.user }} {{ complaint.location }} {{ complaint.description }} {{ complaint.status }}">
+          <td class="fw-semibold">#{{ complaint.id }}</td>
+          <td>{{ complaint.user|default:"—" }}</td>
+          <td>
+            {% if complaint.image %}
+            <button type="button" class="btn p-0 border-0 bg-transparent" data-et-image="{{ complaint.image.url }}">
+              <img class="et-thumb" src="{{ complaint.image.url }}" alt="">
+            </button>
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            <div class="text-truncate" style="max-width:240px">{{ complaint.description|default:complaint }}</div>
+            <small class="et-muted">{{ complaint.location|default:"" }}</small>
+          </td>
+          <td><span class="et-badge" data-status="{{ complaint.status }}">{{ complaint.status }}</span></td>
+          <td>
+            {% url 'update_status' complaint.id as update_pk_url %}
+            {% url 'update_status' as update_plain_url %}
+            {% url 'update_complaint' complaint.id as update_pk_url2 %}
+            <form method="post" action="{% firstof update_pk_url update_pk_url2 update_plain_url %}" class="d-flex gap-2 js-confirm-status" data-et-status-form>
+              {% csrf_token %}
+              <input type="hidden" name="complaint_id" value="{{ complaint.id }}">
+              <input type="hidden" name="id" value="{{ complaint.id }}">
+              <select name="status" class="form-select form-select-sm" data-current="{{ complaint.status }}">
+                <option value="Pending" {% if complaint.status == "Pending" %}selected{% endif %}>Pending</option>
+                <option value="In Progress" {% if complaint.status == "In Progress" %}selected{% endif %}>In Progress</option>
+                <option value="Resolved" {% if complaint.status == "Resolved" %}selected{% endif %}>Resolved</option>
+              </select>
+              <button type="submit" class="btn btn-et btn-sm" data-skip-loading="true">Save</button>
             </form>
-        </td>
-    </tr>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center py-5 et-muted">No complaints in the queue.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="et-mobile-cards">
+    {% for complaint in complaints %}
+    <article class="et-m-card et-card" data-et-card data-status="{{ complaint.status }}" data-search="{{ complaint }} {{ complaint.user }} {{ complaint.location }} {{ complaint.description }} {{ complaint.status }}">
+      <div class="d-flex justify-content-between mb-2">
+        <strong>#{{ complaint.id }} · {{ complaint.user }}</strong>
+        <span class="et-badge" data-status="{{ complaint.status }}">{{ complaint.status }}</span>
+      </div>
+      <p>{{ complaint.description }}</p>
+      {% if complaint.image %}
+      <button type="button" class="btn btn-et-ghost btn-sm mb-3" data-et-image="{{ complaint.image.url }}">View image</button>
+      {% endif %}
+      {% url 'update_status' complaint.id as update_pk_url %}
+      <form method="post" action="{{ update_pk_url }}" class="js-confirm-status">
+        {% csrf_token %}
+        <input type="hidden" name="complaint_id" value="{{ complaint.id }}">
+        <div class="d-flex gap-2">
+          <select name="status" class="form-select">
+            <option value="Pending" {% if complaint.status == "Pending" %}selected{% endif %}>Pending</option>
+            <option value="In Progress" {% if complaint.status == "In Progress" %}selected{% endif %}>In Progress</option>
+            <option value="Resolved" {% if complaint.status == "Resolved" %}selected{% endif %}>Resolved</option>
+          </select>
+          <button class="btn btn-et btn-sm" type="submit">Save</button>
+        </div>
+      </form>
+    </article>
     {% endfor %}
-
-
-    <!-- {% comment %} <tr>
-        <td colspan="4" class="text-center">
-            No complaints found
-        </td>
-    </tr> {% endcomment %} -->
-
-    </tbody>
-
-</table>
-
-<div class="mt-3 d-flex justify-content-center">
-
-    {% if complaints.has_previous %}
-        <a href="?page={{ complaints.previous_page_number }}" class="btn btn-sm btn-dark me-2">Previous</a>
-    {% endif %}
-
-    <span class="mt-1">
-        Page {{ complaints.number }} of {{ complaints.paginator.num_pages }}
-    </span>
-
-    {% if complaints.has_next %}
-        <a href="?page={{ complaints.next_page_number }}" class="btn btn-sm btn-dark ms-2">Next</a>
-    {% endif %}
-
+  </div>
 </div>
-<!-- {% comment %}
-<script>
-    // Auto refresh every 10 seconds
-    setTimeout(function () {
-        location.reload();
-    }, 10000); // 10000ms = 10 sec
-</script> {% endcomment %} -->
-
+{% if is_paginated or page_obj.has_other_pages %}
+<nav aria-label="Pagination">
+  <ul class="pagination justify-content-end">
+    {% if page_obj.has_previous %}
+    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+    {% endif %}
+    <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+    {% if page_obj.has_next %}
+    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
 {% endblock %}
+

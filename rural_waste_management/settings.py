@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "waste_app",
     "rest_framework",
+    
 ]
 
 #middleware

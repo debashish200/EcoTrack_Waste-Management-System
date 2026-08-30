@@ -1,49 +1,71 @@
-{% extends 'waste_app/base.html' %}
-
+{% extends "waste_app/base.html" %}
+{% load static %}
+{% block title %}Create account{% endblock %}
+{% block body_class %}et-auth{% endblock %}
 {% block content %}
-
-<div class="row justify-content-center">
-    <div class="col-md-6">
-<form method="post">
-    {% csrf_token %}
-    <h3>Register</h3>
-    <div class="mb-3">
-        {{ form.username.label_tag }}
-        {{ form.username }}
-        <div class="text-danger">{{ form.username.errors }}</div>
+{% url 'login' as url_login %}
+<div class="et-auth-split">
+  <section class="et-auth-art">
+    <p class="text-uppercase small mb-2" style="letter-spacing:.12em;opacity:.8;">Citizen onboarding</p>
+    <h1 class="display-5 mb-3">Register once. Report waste from any ward.</h1>
+    <p class="lead mb-0" style="max-width:36rem;opacity:.9;">
+      A single account lets you submit complaints, attach photos, and follow resolution status in real time.
+    </p>
+  </section>
+  <section class="et-auth-panel">
+    <div class="et-card et-auth-card">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <img src="{% static 'images/logo.svg' %}" alt="" width="40" height="40">
+        <strong>EcoTrack</strong>
+      </div>
+      <h2 class="h3 mb-1">Create your account</h2>
+      <p class="et-muted mb-4">Use a strong password you do not reuse elsewhere.</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="et-field">
+          <label class="et-label" for="{{ form.username.id_for_label }}">Username</label>
+          {{ form.username }}
+          {{ form.username.errors }}
+          {% if form.username.help_text %}<div class="helptext">{{ form.username.help_text }}</div>{% endif %}
+        </div>
+        <div class="et-field">
+          <label class="et-label" for="{{ form.email.id_for_label }}">Email</label>
+          {{ form.email }}
+          {{ form.email.errors }}
+        </div>
+        <div class="et-field">
+          <label class="et-label" for="{{ form.password1.id_for_label }}">Password</label>
+          <div class="et-password-wrap">
+            {{ form.password1 }}
+            <button type="button" class="et-toggle-pass" data-et-toggle-password aria-label="Show password">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+          <div class="et-strength" data-et-strength data-score="0"><span></span></div>
+          <div class="d-flex justify-content-between">
+            <span class="helptext">{{ form.password1.help_text }}</span>
+            <small class="et-muted" data-et-strength-label></small>
+          </div>
+          {{ form.password1.errors }}
+        </div>
+        <div class="et-field">
+          <label class="et-label" for="{{ form.password2.id_for_label }}">Confirm password</label>
+          <div class="et-password-wrap">
+            {{ form.password2 }}
+            <button type="button" class="et-toggle-pass" data-et-toggle-password aria-label="Show password">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+          {{ form.password2.errors }}
+        </div>
+        <button type="submit" class="btn btn-et w-100 mt-2" data-et-loading>Create account</button>
+      </form>
+      <p class="text-center mt-4 mb-0 small">
+        Already registered?
+        <a href="{{ url_login }}">Sign in</a>
+      </p>
     </div>
-
-    <div class="mb-3">
-        {{ form.email.label_tag }}
-        {{ form.email }}
-        <div class="text-danger">{{ form.email.errors }}</div>
-    </div>
-
-    <div class="mb-3">
-        {{ form.password1.label_tag }}
-        {{ form.password1 }}
-        <div class="text-danger">{{ form.password1.errors }}</div>
-    </div>
-
-    <div class="mb-3">
-        {{ form.password2.label_tag }}
-        {{ form.password2 }}
-        <div class="text-danger">{{ form.password2.errors }}</div>
-    </div>
-
-    <div class="mb-3">
-    {{ form.role.label_tag }}
-    {{ form.role }}
-    </div>
-
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-success  w-100">Register</button>
-
-        <a href="{% url 'login' %}" class="btn btn-primary w-100">
-            Login
-        </a>
-    </div>
-
-</form>
-
+  </section>
+</div>
 {% endblock %}
