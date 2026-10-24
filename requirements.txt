@@ -27,3 +27,5 @@ PyYAML==6.0.3
 regex==2025.11.3
 requests==2.32.5
 sqlparse==0.5.3
+dj-database-url==3.1.2
+psycopg ==3.3.6
