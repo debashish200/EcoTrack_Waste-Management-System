@@ -1,4 +1,4 @@
-# ♻️ Rural Waste Management System
+# ♻️ EcoTrack_Waste-Management-System
 
 A Django-based web application designed to streamline waste complaint management in rural areas. The system enables users to raise complaints, while administrators can track, manage, and update the status efficiently.
 
